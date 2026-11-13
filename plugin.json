@@ -1,0 +1,21 @@
+{
+    "$schema": "https://github.com/AvengeMedia/DankMaterialShell/raw/refs/heads/master/PLUGINS/plugin-schema.json",
+    "id": "skykeepReminders",
+    "name": "Skykeep Reminders",
+    "description": "Your iCloud Reminders in the bar, read from Skykeep's local library: overdue and due-today count, with a popout list",
+    "version": "0.1.0",
+    "author": "dukkokun",
+    "type": "widget",
+    "capabilities": ["dankbar-widget"],
+    "component": "./SkykeepRemindersWidget.qml",
+    "settings": "./SkykeepRemindersSettings.qml",
+    "icon": "checklist",
+    "requires_dms": ">=2.0.0",
+    "requires": ["sqlite3", "bash"],
+    "license": "MIT",
+    "permissions": [
+        "settings_read",
+        "settings_write",
+        "process"
+    ]
+}
