@@ -77,7 +77,13 @@ PluginComponent {
     Component.onDestruction: Proc.release(procId)
 
     function launch(args) {
-        Quickshell.execDetached(["bash", scriptPath, "open"].concat(args));
+        console.info("skykeepReminders: launching Skykeep", JSON.stringify(args));
+        Proc.runCommand(procId + ".open", ["bash", scriptPath, "open"].concat(args), (out, code) => {
+            if (code !== 0)
+                console.warn("skykeepReminders: launch failed, exit", code, out);
+            else
+                console.info("skykeepReminders: launch ok");
+        }, 0, 15000, root);
     }
 
     function visibleReminders(list) {

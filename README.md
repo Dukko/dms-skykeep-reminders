@@ -37,6 +37,12 @@ You can override the path in the plugin settings.
 To launch Skykeep, the helper uses `skykeep` from `PATH`. If that isn't found, it reads the
 `Exec=` line from `Skykeep.desktop`, which covers AppImage installs.
 
+A launch from the bar carries no xdg-activation token. On niri and Hyprland, that means an
+already-open Skykeep window would stay where it is without taking focus. To handle this, the
+helper waits for the window, matched by app_id `io.github.yashwanthkamireddi.Skykeep.<App>`,
+and focuses it through `niri msg` or `hyprctl`. Launch output is logged to
+`$XDG_RUNTIME_DIR/skykeep-reminders-open.log`.
+
 ## Requirements
 
 - Dux / DankMaterialShell ≥ 2.0

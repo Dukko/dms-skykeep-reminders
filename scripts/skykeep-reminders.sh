@@ -120,12 +120,75 @@ skykeep_command() {
 cmd_open() {
     local launcher
     if ! launcher="$(skykeep_command)"; then
-        printf 'skykeep-reminders: Skykeep is not installed\n' >&2
+        printf 'skykeep-reminders: Skykeep is not installed\n'
         return 1
     fi
     local -a argv
     read -r -a argv <<<"$launcher"
-    setsid -f "${argv[@]}" "$@" >/dev/null 2>&1 </dev/null
+    local log="${XDG_RUNTIME_DIR:-/tmp}/skykeep-reminders-open.log"
+    printf '[%s] %s %s\n' "$(date '+%F %T')" "${argv[*]}" "$*" >>"$log"
+    setsid -f "${argv[@]}" "$@" >>"$log" 2>&1 </dev/null
+
+    # A launch from the bar carries no xdg-activation token, so compositors with
+    # focus-stealing prevention (niri, Hyprland) leave an already-open Skykeep window
+    # where it is. Ask the compositor to focus it instead.
+    local app
+    app="$(target_app "$@")" || return 0
+    focus_window "$APP_ID.$app" >>"$log" 2>&1 &
+    disown
+}
+
+# Which Skykeep window an argument list opens: --app reminders -> Reminders,
+# --new note -> Notes, and so on. Each app has app_id io.github...Skykeep.<Name>.
+target_app() {
+    local -a args=()
+    local a want="" i
+    for a in "$@"; do # split --flag=value into --flag value
+        case "$a" in --app=* | --new=*) args+=("${a%%=*}" "${a#*=}") ;; *) args+=("$a") ;; esac
+    done
+    for ((i = 0; i < ${#args[@]} - 1; i++)); do
+        case "${args[i]}" in
+            --app) want="${args[i + 1]}" ;;
+            --new) case "${args[i + 1]}" in reminder) want=reminders ;; note) want=notes ;; event) want=calendar ;; esac ;;
+        esac
+    done
+    case "$want" in
+        reminders) echo Reminders ;; notes) echo Notes ;; calendar) echo Calendar ;;
+        contacts) echo Contacts ;; drive|drivews) echo Drive ;; photos) echo Photos ;;
+        *) return 1 ;;
+    esac
+}
+
+# Focus the first window with this exact app_id, waiting up to ~5s for it to appear.
+focus_window() {
+    local app_id="$1" i id
+    for ((i = 0; i < 25; i++)); do
+        if [[ -n "${NIRI_SOCKET:-}" ]] && command -v niri >/dev/null 2>&1; then
+            id="$(niri msg --json windows 2>/dev/null | window_id_for "$app_id")"
+            [[ -n "$id" ]] && { niri msg action focus-window --id "$id"; return 0; }
+        elif [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] && command -v hyprctl >/dev/null 2>&1; then
+            if hyprctl -j clients 2>/dev/null | grep -q "\"class\": \"$app_id\""; then
+                hyprctl dispatch focuswindow "class:^${app_id//./\\.}\$" >/dev/null
+                return 0
+            fi
+        else
+            return 0 # unknown compositor: nothing we can do
+        fi
+        sleep 0.2
+    done
+    echo "skykeep-reminders: no $app_id window appeared to focus"
+}
+
+# Read niri's window list (JSON) on stdin, print the id of the window with app_id $1.
+window_id_for() {
+    if command -v jq >/dev/null 2>&1; then
+        jq -r --arg a "$1" 'map(select(.app_id == $a)) | .[0].id // empty'
+    else
+        python3 -c 'import json,sys
+for w in json.load(sys.stdin):
+    if w.get("app_id") == sys.argv[1]:
+        print(w["id"]); break' "$1"
+    fi
 }
 
 case "${1:-query}" in
