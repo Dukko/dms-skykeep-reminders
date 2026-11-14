@@ -44,9 +44,14 @@ PluginComponent {
     _visibilityOverrideValue: false
 
     // ---- data -----------------------------------------------------------------------
+    // Proc.runCommand debounces by id and a repeat call replaces the stored callback, so
+    // every widget instance (one per bar / monitor) needs its own id or only the last
+    // instance ever receives results.
+    readonly property string procId: "skykeepReminders.query." + Math.random().toString(36).slice(2)
+
     function refresh() {
         busy = true;
-        Proc.runCommand("skykeepReminders.query", ["bash", scriptPath, "query", dbPath], (stdout, exitCode) => {
+        Proc.runCommand(procId, ["bash", scriptPath, "query", dbPath], (stdout, exitCode) => {
             busy = false;
             nowMs = Date.now();
             if (exitCode !== 0) {
@@ -66,8 +71,10 @@ PluginComponent {
                 errorText = "Unexpected output from helper";
                 console.warn("skykeepReminders: parse error", e, stdout);
             }
-        }, 200);
+        }, 200, 15000, root);
     }
+
+    Component.onDestruction: Proc.release(procId)
 
     function launch(args) {
         Quickshell.execDetached(["bash", scriptPath, "open"].concat(args));
