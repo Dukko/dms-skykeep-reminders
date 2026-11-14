@@ -171,7 +171,8 @@ PluginComponent {
             day = Qt.formatDate(due, "d MMM yyyy");
         if (r.allDay)
             return day;
-        return day + ", " + Qt.formatTime(due, Locale.ShortFormat);
+        // Qt.formatTime would read Locale.ShortFormat as Qt.ISODate ("15:30:00").
+        return day + ", " + due.toLocaleTimeString(Qt.locale(), Locale.ShortFormat);
     }
 
     function listColour(r) {
