@@ -198,9 +198,13 @@ PluginComponent {
         return "iCloud Reminders: " + summaryText();
     }
 
+    // Not surfaceLive: that follows effectiveVisible, so with hideWhenEmpty a hidden
+    // widget would stop polling and never come back.
+    readonly property bool pollLive: surfaceContext?.live ?? true
+
     Timer {
         interval: root.refreshSeconds * 1000
-        running: root.surfaceLive
+        running: root.pollLive
         repeat: true
         triggeredOnStart: true
         onTriggered: root.refresh()
@@ -208,7 +212,7 @@ PluginComponent {
 
     Timer {
         interval: 60000
-        running: root.surfaceLive
+        running: root.pollLive
         repeat: true
         onTriggered: root.nowMs = Date.now()
     }
@@ -375,14 +379,14 @@ PluginComponent {
 
                                         Rectangle {
                                             id: dot
-                                            width: 10
-                                            height: 10
-                                            radius: 5
+                                            width: Theme.spacingS + Theme.spacingXXS
+                                            height: width
+                                            radius: width / 2
                                             anchors.left: parent.left
                                             anchors.leftMargin: Theme.spacingM
                                             anchors.verticalCenter: parent.verticalCenter
                                             color: "transparent"
-                                            border.width: 2
+                                            border.width: Theme.spacingXXS
                                             border.color: root.listColour(row.modelData)
                                         }
 
@@ -393,7 +397,7 @@ PluginComponent {
                                             anchors.right: badges.left
                                             anchors.rightMargin: Theme.spacingS
                                             anchors.verticalCenter: parent.verticalCenter
-                                            spacing: 2
+                                            spacing: Theme.spacingXXS
 
                                             StyledText {
                                                 width: parent.width

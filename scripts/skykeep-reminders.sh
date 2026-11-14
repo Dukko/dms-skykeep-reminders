@@ -164,7 +164,7 @@ focus_window() {
     local app_id="$1" i id
     for ((i = 0; i < 25; i++)); do
         if [[ -n "${NIRI_SOCKET:-}" ]] && command -v niri >/dev/null 2>&1; then
-            id="$(niri msg --json windows 2>/dev/null | window_id_for "$app_id")"
+            id="$(niri msg windows 2>/dev/null | window_id_for "$app_id")"
             [[ -n "$id" ]] && { niri msg action focus-window --id "$id"; return 0; }
         elif [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] && command -v hyprctl >/dev/null 2>&1; then
             if hyprctl -j clients 2>/dev/null | grep -q "\"class\": \"$app_id\""; then
@@ -179,16 +179,16 @@ focus_window() {
     echo "skykeep-reminders: no $app_id window appeared to focus"
 }
 
-# Read niri's window list (JSON) on stdin, print the id of the window with app_id $1.
+# Read `niri msg windows` on stdin, print the id of the window with app_id $1:
+#   Window ID 30: (focused)
+#     App ID: "io.github.yashwanthkamireddi.Skykeep.Reminders"
 window_id_for() {
-    if command -v jq >/dev/null 2>&1; then
-        jq -r --arg a "$1" 'map(select(.app_id == $a)) | .[0].id // empty'
-    else
-        python3 -c 'import json,sys
-for w in json.load(sys.stdin):
-    if w.get("app_id") == sys.argv[1]:
-        print(w["id"]); break' "$1"
-    fi
+    awk -v want="$1" '
+        /^Window ID / { id = $3; sub(/:$/, "", id) }
+        $1 == "App" && $2 == "ID:" {
+            v = $0; sub(/^[^"]*"/, "", v); sub(/"[^"]*$/, "", v)
+            if (v == want) { print id; exit }
+        }'
 }
 
 case "${1:-query}" in
