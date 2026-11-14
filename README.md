@@ -88,7 +88,7 @@ Reminder titles are your data. Avoid pasting raw `query` output into issues.
 
 ## Roadmap
 
-- Tick reminders off from the popout. Skykeep would need to expose a write path such as a
+- Tick reminders off from the popout ([Skykeep#35](https://github.com/YashwanthKamireddi/Skykeep/issues/35)). Skykeep would need to expose a write path such as a
   CLI or IPC, because writing to its library directly would bypass its outbox.
 - Per-list filtering
 - A Control Center tile and a desktop widget
