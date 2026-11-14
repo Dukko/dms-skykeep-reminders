@@ -4,7 +4,7 @@
     "name": "Skykeep Reminders",
     "description": "Your iCloud Reminders in the bar, read from Skykeep's local library: overdue and due-today count, with a popout list",
     "version": "0.1.0",
-    "author": "dukkokun",
+    "author": "Dukko",
     "type": "widget",
     "capabilities": ["dankbar-widget"],
     "component": "./SkykeepRemindersWidget.qml",

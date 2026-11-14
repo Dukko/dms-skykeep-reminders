@@ -53,7 +53,9 @@ and focuses it through `niri msg` or `hyprctl`. Launch output is logged to
 ## Install
 
 ```sh
-git clone <this repo> ~/.config/dms/plugins/skykeepReminders
+dms plugins install skykeepReminders   # once it is listed in the registry
+# or manually:
+git clone https://github.com/Dukko/dms-skykeep-reminders ~/.config/dms/plugins/skykeepReminders
 # or, while developing:
 ln -s "$PWD" ~/.config/dms/plugins/skykeepReminders
 ```
