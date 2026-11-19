@@ -9,7 +9,7 @@ PluginSettings {
 
     StyledText {
         width: parent.width
-        text: "Shows your iCloud Reminders from Skykeep's local library. Skykeep must be installed and signed in; it keeps the library in sync with iCloud. The plugin only reads it."
+        text: "Shows your iCloud Reminders from Skykeep's local library. Skykeep 0.1.24 or newer must be installed and signed in: the plugin reads the library and asks Skykeep to tick reminders off, put them back, add one or open it, so every change reaches iCloud through its outbox. Adding from the popout needs 0.1.31."
         font.pixelSize: Theme.fontSizeSmall
         color: Theme.surfaceVariantText
         wrapMode: Text.WordWrap
@@ -59,6 +59,30 @@ PluginSettings {
         settingKey: "showSubtasks"
         label: "Show subtasks"
         defaultValue: true
+    }
+
+    ToggleSetting {
+        settingKey: "showCompleted"
+        label: "Show recently completed reminders"
+        description: "Ticked-off reminders appear under Recently completed, where a click puts them back"
+        defaultValue: true
+    }
+
+    ToggleSetting {
+        settingKey: "inlineCreate"
+        label: "Add reminders from the popout"
+        description: "Show a text field that adds a reminder without opening Skykeep. Needs Skykeep 0.1.31 or newer; turn it off on an older build."
+        defaultValue: true
+    }
+
+    SliderSetting {
+        settingKey: "completedHours"
+        label: "Recently completed window"
+        description: "How far back the Recently completed section looks"
+        minimum: 1
+        maximum: 168
+        unit: "h"
+        defaultValue: 24
     }
 
     ToggleSetting {
